@@ -1,0 +1,33 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle (ако ползвате gradle вместо maven)
+.gradle/
+build/
+
+# Spring Boot
+*.db
+application-local.properties
+application-dev.properties
+application-production.properties
+
+# Logs
+logs/
+*.log
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# НЕ игнорирайте тези файлове:
+# application.properties (основна конфигурация)
+# pom.xml (зависимости)
