@@ -1,0 +1,35 @@
+# Базов образ с Java
+FROM openjdk:17-jdk-slim AS build
+
+# Работна директория
+WORKDIR /app
+
+# Копирайте Maven файловете
+COPY mvnw .
+COPY .mvn .mvn
+COPY pom.xml .
+
+# Дайте права за изпълнение на mvnw
+RUN chmod +x mvnw
+
+# Изтеглете зависимостите (кешира се, ако pom.xml не се променя)
+RUN ./mvnw dependency:go-offline -B
+
+# Копирайте source code
+COPY src src
+
+# Компилирайте приложението
+RUN ./mvnw package -DskipTests
+
+# Втори етап - по-малък образ за изпълнение
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+# Копирайте JAR файла от build етапа
+COPY --from=build /app/target/*.jar app.jar
+
+# Порт за Spring Boot
+EXPOSE 8080
+
+# Стартирайте приложението
+ENTRYPOINT ["java", "-jar", "app.jar"]

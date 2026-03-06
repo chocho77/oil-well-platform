@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL база данни
+  postgres:
+    image: postgres:15-alpine
+    container_name: oilwell-postgres
+    environment:
+      POSTGRES_DB: oilwell_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - oilwell-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend
+  backend:
+    build: ./backend
+    container_name: oilwell-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/oilwell_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    networks:
+      - oilwell-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/well/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Angular Frontend
+  frontend:
+    build: ./frontend
+    container_name: oilwell-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "4200:80"
+    networks:
+      - oilwell-network
+
+# Volumes за персистентност на данните
+volumes:
+  postgres_data:
+
+# Custom network
+networks:
+  oilwell-network:
+    driver: bridge
